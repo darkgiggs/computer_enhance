@@ -114,7 +114,7 @@ int main(int ArgCount, char** Args)
             File.open(FileName, std::ifstream::binary | std::ifstream::in);
             if (!File.good())
             {
-                "Error opening file";
+                std::cout << "Error opening file " << FileName;
                 return -1;
             }
             OutputBuffer = OutputBuffer + FileName + "\n";
