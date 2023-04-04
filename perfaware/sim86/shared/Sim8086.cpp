@@ -37,8 +37,8 @@ void SimulateInstruction(instruction Instruction)
     {
         case Op_mov:
         {
-            instruction_operand Dest = Instruction.Operands[0];
-            instruction_operand Source = Instruction.Operands[1];
+            instruction_operand & Dest = Instruction.Operands[0];
+            instruction_operand & Source = Instruction.Operands[1];
             s32 Value; // s32 to avoid issues on the bitshift right
             switch (Source.Type)
             {
