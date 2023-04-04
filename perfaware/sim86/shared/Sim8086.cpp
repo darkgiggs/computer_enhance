@@ -39,7 +39,14 @@ void SimulateInstruction(instruction Instruction)
         {
             instruction_operand & Dest = Instruction.Operands[0];
             instruction_operand & Source = Instruction.Operands[1];
-            s32 Value; // s32 to avoid issues on the bitshift right
+            s32 Value; 
+            /* 
+            When accessing the high 8 bits in a register, we use
+            a bit shift right by 8 to store the value.
+            If we use a 16bit signed integer and the high bit is 
+            set, depending on implementation, we may copy
+            the high bit as we shift.
+            */
             switch (Source.Type)
             {
             case Operand_Register:
