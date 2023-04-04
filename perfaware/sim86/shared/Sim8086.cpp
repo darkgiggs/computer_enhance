@@ -147,11 +147,11 @@ int main(int ArgCount, char** Args)
             {
                 if (Registers[i] != 0)
                 {
-                    std::stringstream stream;
-                    stream << RegisterNames[i][2]
+                    std::stringstream Stream;
+                    Stream << RegisterNames[i][2]
                         << ": 0x" << std::hex << Registers[i]
                         << " (" << std::to_string(Registers[i]) << ")\n";
-                    OutputBuffer += stream.str();
+                    OutputBuffer += Stream.str();
                 }
             }
 
