@@ -6,8 +6,9 @@
 #include "sim86_shared.h"
 #pragma comment (lib, "sim86_shared_debug.lib")
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
+#define RegisterNumber 15
 
-s16 Registers[15] = {};
+s16 Registers[RegisterNumber] = {};
 
 char const* RegisterNames[][3] =
 {
@@ -142,7 +143,7 @@ int main(int ArgCount, char** Args)
 
             }
 
-            for (int i = 1; i < 15; i++)
+            for (int i = 1; i < RegisterNumber; i++)
             {
                 if (Registers[i] != 0)
                 {
