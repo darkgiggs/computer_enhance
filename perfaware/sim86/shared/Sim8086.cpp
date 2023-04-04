@@ -33,13 +33,15 @@ void SimulateInstruction(instruction Instruction)
 {
     const char* Op = Sim86_MnemonicFromOperationType(Instruction.Op);
     
-    if (Instruction.Op == Op_mov)
+    switch (Instruction.Op)
     {
-        instruction_operand Dest = Instruction.Operands[0];
-        instruction_operand Source = Instruction.Operands[1];
-        s32 Value; // s32 to avoid issues on the bitshift right
-        switch (Source.Type)
+        case Op_mov:
         {
+            instruction_operand Dest = Instruction.Operands[0];
+            instruction_operand Source = Instruction.Operands[1];
+            s32 Value; // s32 to avoid issues on the bitshift right
+            switch (Source.Type)
+            {
             case Operand_Register:
             {
                 Value = Registers[Source.Register.Index];
@@ -56,12 +58,12 @@ void SimulateInstruction(instruction Instruction)
             {
                 Value = Source.Immediate.Value;
             } break;
-        }
+            }
 
-        Value = (s16)Value;
+            Value = (s16)Value;
 
-        switch (Dest.Type)
-        {
+            switch (Dest.Type)
+            {
             case Operand_Register:
             {
                 if (Dest.Register.Offset == 1) // Writing high 8 bits
@@ -83,8 +85,8 @@ void SimulateInstruction(instruction Instruction)
                     Registers[Dest.Register.Index] = Value;
                 }
             } break;
-        }
-
+            }
+        } break;
     }
 
 }
