@@ -39,7 +39,7 @@ void SimulateInstruction(instruction Instruction)
         {
             instruction_operand & Dest = Instruction.Operands[0];
             instruction_operand & Source = Instruction.Operands[1];
-            s32 Value; 
+            s16 Value; 
             /* 
             When accessing the high 8 bits in a register, we use
             a bit shift right by 8 to store the value.
@@ -54,7 +54,7 @@ void SimulateInstruction(instruction Instruction)
                 Value = Registers[Source.Register.Index];
                 if (Source.Register.Offset == 1) // Accessing high 8 bits
                 {
-                    Value >>= 8;
+                    Value = (Value >> 8) & 0xFF;
                 }
                 else if (Source.Register.Count == 1) // Accessing low 8 bits
                 {
@@ -66,8 +66,6 @@ void SimulateInstruction(instruction Instruction)
                 Value = Source.Immediate.Value;
             } break;
             }
-
-            Value = (s16)Value;
 
             switch (Dest.Type)
             {
