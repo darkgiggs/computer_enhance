@@ -63,6 +63,33 @@ static void PrintFlags(bool* Flags)
     std::cout << OutputBuffer << '\n';
 }
 
+static u16 GetSourceValue(const instruction_operand& Source, s16* Registers)
+{
+    u16 Value = 0xFFFF;
+
+    switch (Source.Type)
+    {
+        case Operand_Register:
+        {
+            Value = Registers[Source.Register.Index];
+            if (Source.Register.Count == 1) // Accessing half registers
+            {
+                Value >>= 8 * Source.Register.Offset;
+            }
+        } break;
+        case Operand_Immediate:
+        {
+            Value = Source.Immediate.Value;
+        } break;
+        default:
+        {
+            assert(false);
+        } break;
+    }
+
+    return Value;
+}
+
 static void SimulateInstruction(const instruction& Instruction, s16* Registers, bool* Flags)
 {
     const char* Op = Sim86_MnemonicFromOperationType(Instruction.Op);
@@ -73,28 +100,8 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
         {
             const instruction_operand& Dest = Instruction.Operands[0];
             const instruction_operand& Source = Instruction.Operands[1];
-            u16 Value = 0xFFFF; 
-            switch (Source.Type)
-            {
-                case Operand_Register:
-                {
-                    Value = Registers[Source.Register.Index];
-                    if (Source.Register.Count == 1) // Accessing half registers
-                    {
-                        Value >>= 8 * Source.Register.Offset;
-                    }
-                } break;
-                case Operand_Immediate:
-                {
-                    Value = Source.Immediate.Value;
-                } break;
-                default:
-                {
-                    assert(false);
-                } break;
-
-            }
-
+            u16 Value = GetSourceValue(Source, Registers);
+           
             switch (Dest.Type)
             {
                 case Operand_Register:
@@ -121,27 +128,8 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
         {
             const instruction_operand& Dest = Instruction.Operands[0];
             const instruction_operand& Source = Instruction.Operands[1];
-            u16 Value = 0xFFFF;
+            u16 Value = GetSourceValue(Source, Registers);
             u16 Result = 0xFFFF;
-            switch (Source.Type)
-            {
-                case Operand_Register:
-                {
-                    Value = Registers[Source.Register.Index];
-                    if (Source.Register.Count == 1) // Accessing half registers
-                    {
-                        Value >>= 8 * Source.Register.Offset;
-                    }
-                } break;
-                case Operand_Immediate:
-                {
-                    Value = Source.Immediate.Value;
-                } break;
-                default:
-                {
-                    assert(false);
-                } break;
-            }
 
             switch (Dest.Type)
             {
