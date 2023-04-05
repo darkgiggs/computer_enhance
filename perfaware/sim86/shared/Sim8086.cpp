@@ -29,28 +29,36 @@ static char const* RegisterNames[][3] =
 
 static constexpr int FlagNumber = 9;
 static char const* FlagNames = { "ODITSZAPC" };
-static enum Flags
+enum Flags
 {
-    OF, DF, IF, TF, SF, ZF, AF, PF, CF
+    Flag_OF,
+    Flag_DF,
+    Flag_IF,
+    Flag_TF,
+    Flag_SF,
+    Flag_ZF,
+    Flag_AF,
+    Flag_PF,
+    Flag_CF,
 };
 
 static void SetFlags(u16 Result, bool* Flags)
 {
     if (Result && 0x8000)
     {
-        Flags[SF] = true;
+        Flags[Flag_SF] = true;
     }
     else
     {
-        Flags[SF] = false;
+        Flags[Flag_SF] = false;
     }
     if (Result == 0)
     {
-        Flags[ZF] = true;
+        Flags[Flag_ZF] = true;
     }
     else
     {
-        Flags[ZF] = false;
+        Flags[Flag_ZF] = false;
     }
 }
 
