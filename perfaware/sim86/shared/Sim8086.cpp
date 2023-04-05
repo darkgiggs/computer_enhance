@@ -53,7 +53,7 @@ static void SetFlags(u16 Result, bool* FlagArray)
 static void PrintFlags(bool* FlagArray)
 {
     std::string OutputBuffer = "Flags: ";
-    for (unsigned int i = 0; i < Flag_count; i++)
+    for (size_t i = 0; i < Flag_count; i++)
     {
         if (FlagArray[i])
         {
@@ -260,7 +260,7 @@ int main(int ArgCount, char** Args)
 
             }
 
-            for (int i = 1; i < RegisterNumber; i++)
+            for (size_t i = 1; i < RegisterNumber; i++)
             {
                 if (Registers[i] != 0)
                 {
