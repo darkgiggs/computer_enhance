@@ -53,12 +53,9 @@ void SimulateInstruction(instruction Instruction)
                 case Operand_Register:
                 {
                     Value = Registers[Source.Register.Index];
-                    if (Source.Register.Offset == 1) // Accessing high 8 bits
+                    if (Source.Register.Count == 1) // Accessing half registers
                     {
-                        Value = (Value >> 8) & 0xFF;
-                    }
-                    else if (Source.Register.Count == 1) // Accessing low 8 bits
-                    {
+                        Value >>= 8 * Source.Register.Offset;
                         Value &= 0xFF;
                     }
                 } break;
