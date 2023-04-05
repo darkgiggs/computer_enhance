@@ -8,7 +8,6 @@
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
 static constexpr int RegisterNumber = 15;
-static s16 Registers[RegisterNumber] = {};
 static char const* RegisterNames[][3] =
 {
     {"", "", ""},
@@ -29,14 +28,13 @@ static char const* RegisterNames[][3] =
 };
 
 static constexpr int FlagNumber = 9;
-static bool Flags[FlagNumber] = {};
 static char const* FlagNames = { "ODITSZAPC" };
 static enum Flags
 {
     OF, DF, IF, TF, SF, ZF, AF, PF, CF
 };
 
-static void SetFlags(u16 Result)
+static void SetFlags(u16 Result, bool* Flags)
 {
     if (Result && 0x8000)
     {
@@ -56,7 +54,20 @@ static void SetFlags(u16 Result)
     }
 }
 
-static void SimulateInstruction(const instruction& Instruction)
+static void PrintFlags(bool* Flags)
+{
+    std::string OutputBuffer = "Flags: ";
+    for (int i = 0; i < FlagNumber; i++)
+    {
+        if (Flags[i])
+        {
+            OutputBuffer += FlagNames[i];
+        }
+    }
+    std::cout << OutputBuffer << '\n';
+}
+
+static void SimulateInstruction(const instruction& Instruction, s16* Registers, bool* Flags)
 {
     const char* Op = Sim86_MnemonicFromOperationType(Instruction.Op);
     
@@ -64,8 +75,8 @@ static void SimulateInstruction(const instruction& Instruction)
     {
         case Op_mov:
         {
-            instruction_operand& Dest = Instruction.Operands[0];
-            instruction_operand& Source = Instruction.Operands[1];
+            const instruction_operand& Dest = Instruction.Operands[0];
+            const instruction_operand& Source = Instruction.Operands[1];
             u16 Value; 
             switch (Source.Type)
             {
@@ -131,17 +142,52 @@ static void SimulateInstruction(const instruction& Instruction)
                     if (Dest.Register.Count == 1) // Accessing half registers
                     {
                         u8* DestPointer = reinterpret_cast<u8*>(&Registers[Dest.Register.Index]) + Dest.Register.Offset;
-                        Result = *DestPointer + Value;
-                        *DestPointer = static_cast<u8>(Result);
+
+                        switch (Instruction.Op)
+                        {
+                            case Op_add:
+                            {
+                                Result = *DestPointer + Value;
+                                *DestPointer = static_cast<u8>(Result);
+                            } break;
+                            case Op_sub:
+                            {
+                                Result = *DestPointer - Value;
+                                *DestPointer = static_cast<u8>(Result);
+                            } break;
+                            case Op_cmp:
+                            {
+                                Result = *DestPointer - Value;
+                            } break;
+                        }
                     }
                     else
                     {
-                        Registers[Dest.Register.Index] += Value;
-                        Result = Registers[Dest.Register.Index];
+                        switch (Instruction.Op)
+                        {
+                            case Op_add:
+                            {
+                                Registers[Dest.Register.Index] += Value;
+                                Result = Registers[Dest.Register.Index];
+                            } break;
+                            case Op_sub:
+                            {
+                                Registers[Dest.Register.Index] -= Value;
+                                Result = Registers[Dest.Register.Index];
+                            } break;
+                            case Op_cmp:
+                            {
+                                Result = Registers[Dest.Register.Index] - Value;
+                            } break;
+                        }
+                        
                     }
                 } break;
             }
-            SetFlags(Result);
+            SetFlags(Result, Flags);
+#if DEBUG
+            PrintFlags(Flags);
+#endif
         } break;
     }
 }
@@ -162,10 +208,12 @@ int main(int ArgCount, char** Args)
     printf("8086 Instruction Instruction Encoding Count: %u\n", Table.EncodingCount);
   
     if (ArgCount > 1)
-    {
-        
+    { 
         for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
         {
+            s16 Registers[RegisterNumber] = {};
+            bool Flags[FlagNumber] = {};
+
             std::string OutputBuffer;
             char* FileName = Args[ArgIndex];
             std::ifstream File;
@@ -175,11 +223,10 @@ int main(int ArgCount, char** Args)
                 std::cout << "Error opening file " << FileName;
                 return -1;
             }
-            OutputBuffer = OutputBuffer + FileName + "\n";
+            
+            std::cout << "\n" << FileName << "\n";
             std::vector<u8> Bytes((std::istreambuf_iterator<char>(File)), std::istreambuf_iterator<char>());
             u32 BytesRead = Bytes.size();
-
-
 
             u32 Offset = 0;
             while (Offset < BytesRead)
@@ -190,7 +237,7 @@ int main(int ArgCount, char** Args)
                 if (Decoded.Op)
                 {
                     Offset += Decoded.Size;
-                    SimulateInstruction(Decoded);
+                    SimulateInstruction(Decoded, Registers, Flags);
                 }
                 else
                 {
@@ -212,6 +259,7 @@ int main(int ArgCount, char** Args)
                 }
             }
             std::cout << OutputBuffer;
+            PrintFlags(Flags);
         }
     } 
 }
