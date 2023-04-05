@@ -30,7 +30,7 @@ static char const* RegisterNames[][3] =
     {"flags", "flags", "flags"}
 };
 
-static void SimulateInstruction(instruction& Instruction)
+static void SimulateInstruction(const instruction& Instruction)
 {
     const char* Op = Sim86_MnemonicFromOperationType(Instruction.Op);
     
