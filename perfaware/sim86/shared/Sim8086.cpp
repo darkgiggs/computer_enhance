@@ -64,7 +64,7 @@ void SimulateInstruction(instruction Instruction)
                 {
                     if (Dest.Register.Count == 1) // Accessing half registers
                     {
-                        u8* DestPointer = static_cast<u8*>(static_cast<void*>(&Registers[Dest.Register.Index])) + Dest.Register.Offset;
+                        u8* DestPointer = reinterpret_cast<u8*>(&Registers[Dest.Register.Index]) + Dest.Register.Offset;
                         *DestPointer = static_cast<u8>(Value);
                     }
                     else
