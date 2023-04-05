@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include "sim86_shared.h"
+#include <assert.h>
 #pragma comment (lib, "sim86_shared_debug.lib")
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
@@ -86,7 +87,7 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
         {
             const instruction_operand& Dest = Instruction.Operands[0];
             const instruction_operand& Source = Instruction.Operands[1];
-            u16 Value = 0; 
+            u16 Value = 0xFFFF; 
             switch (Source.Type)
             {
                 case Operand_Register:
@@ -101,6 +102,11 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                 {
                     Value = Source.Immediate.Value;
                 } break;
+                default:
+                {
+                    assert(false);
+                } break;
+
             }
 
             switch (Dest.Type)
@@ -116,6 +122,10 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                     {
                         Registers[Dest.Register.Index] = Value;
                     }
+                } break;
+                default:
+                {
+                    assert(false);
                 } break;
             }
         } break;
@@ -140,6 +150,10 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                 case Operand_Immediate:
                 {
                     Value = Source.Immediate.Value;
+                } break;
+                default:
+                {
+                    assert(false);
                 } break;
             }
 
@@ -168,6 +182,10 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                             {
                                 Result = *DestPointer - Value;
                             } break;
+                            default:
+                            {
+                                assert(false);
+                            } break;
                         }
                     }
                     else
@@ -188,15 +206,27 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                             {
                                 Result = Registers[Dest.Register.Index] - Value;
                             } break;
+                            default:
+                            {
+                                assert(false);
+                            } break;
                         }
                         
                     }
+                } break;
+                default:
+                {
+                    assert(false);
                 } break;
             }
             SetFlags(Result, Flags);
 #if DEBUG
             PrintFlags(Flags);
 #endif
+        } break;
+        default:
+        {
+            assert(false);
         } break;
     }
 }
