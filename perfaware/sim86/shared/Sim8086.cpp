@@ -82,7 +82,6 @@ void SimulateInstruction(instruction Instruction)
             }
         } break;
     }
-
 }
 
 
@@ -150,10 +149,7 @@ int main(int ArgCount, char** Args)
                     OutputBuffer += Stream.str();
                 }
             }
-
             std::cout << OutputBuffer;
         }
-
-    }
-    
+    } 
 }
