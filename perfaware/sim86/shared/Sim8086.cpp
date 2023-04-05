@@ -69,19 +69,10 @@ void SimulateInstruction(instruction Instruction)
             {
                 case Operand_Register:
                 {
-                    if (Dest.Register.Offset == 1) // Writing high 8 bits
+                    if (Dest.Register.Count == 1) // Accessing half registers
                     {
-                        s16 Temp = Registers[Dest.Register.Index];
-                        Temp &= 0xFF;
-                        Value <<= 8;
-                        Registers[Dest.Register.Index] = Temp | Value;
-                    }
-                    else if (Dest.Register.Count == 1) // Accessing low 8 bits
-                    {
-                        Value &= 0xFF;
-                        s16 Temp = Registers[Dest.Register.Index];
-                        Temp &= 0xFF00;
-                        Registers[Dest.Register.Index] = Temp | Value;
+                        u8* DestPointer = static_cast<u8*>(static_cast<void*>(&Registers[Dest.Register.Index])) + Dest.Register.Offset;
+                        *DestPointer = static_cast<u8>(Value);
                     }
                     else
                     {
