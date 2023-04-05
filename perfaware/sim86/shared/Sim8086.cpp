@@ -9,9 +9,9 @@
 
 static constexpr int RegisterNumber = 15;
 
-s16 Registers[RegisterNumber] = {};
+static s16 Registers[RegisterNumber] = {};
 
-char const* RegisterNames[][3] =
+static char const* RegisterNames[][3] =
 {
     {"", "", ""},
     {"al", "ah", "ax"},
@@ -30,7 +30,7 @@ char const* RegisterNames[][3] =
     {"flags", "flags", "flags"}
 };
 
-void SimulateInstruction(instruction& Instruction)
+static void SimulateInstruction(instruction& Instruction)
 {
     const char* Op = Sim86_MnemonicFromOperationType(Instruction.Op);
     
