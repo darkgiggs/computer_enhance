@@ -7,11 +7,9 @@
 #pragma comment (lib, "sim86_shared_debug.lib")
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
-constexpr int RegisterNumber = 15;
-
-s16 Registers[RegisterNumber] = {};
-
-char const* RegisterNames[][3] =
+static constexpr int RegisterNumber = 15;
+static s16 Registers[RegisterNumber] = {};
+static char const* RegisterNames[][3] =
 {
     {"", "", ""},
     {"al", "ah", "ax"},
@@ -30,7 +28,35 @@ char const* RegisterNames[][3] =
     {"flags", "flags", "flags"}
 };
 
-void SimulateInstruction(instruction Instruction)
+static constexpr int FlagNumber = 9;
+static bool Flags[FlagNumber] = {};
+static char const* FlagNames = { "ODITSZAPC" };
+static enum Flags
+{
+    OF, DF, IF, TF, SF, ZF, AF, PF, CF
+};
+
+static void SetFlags(u16 Result)
+{
+    if (Result && 0x8000)
+    {
+        Flags[SF] = true;
+    }
+    else
+    {
+        Flags[SF] = false;
+    }
+    if (Result == 0)
+    {
+        Flags[ZF] = true;
+    }
+    else
+    {
+        Flags[ZF] = false;
+    }
+}
+
+static void SimulateInstruction(const instruction& Instruction)
 {
     const char* Op = Sim86_MnemonicFromOperationType(Instruction.Op);
     
@@ -72,6 +98,50 @@ void SimulateInstruction(instruction Instruction)
                     }
                 } break;
             }
+        } break;
+        case Op_add:
+        case Op_sub:
+        case Op_cmp:
+        {
+            const instruction_operand& Dest = Instruction.Operands[0];
+            const instruction_operand& Source = Instruction.Operands[1];
+            u16 Value;
+            u16 Result;
+            switch (Source.Type)
+            {
+                case Operand_Register:
+                {
+                    Value = Registers[Source.Register.Index];
+                    if (Source.Register.Count == 1) // Accessing half registers
+                    {
+                        Value >>= 8 * Source.Register.Offset;
+                    }
+                } break;
+                case Operand_Immediate:
+                {
+                    Value = Source.Immediate.Value;
+                } break;
+            }
+
+            switch (Dest.Type)
+            {
+                case Operand_Register:
+                {
+                    
+                    if (Dest.Register.Count == 1) // Accessing half registers
+                    {
+                        u8* DestPointer = reinterpret_cast<u8*>(&Registers[Dest.Register.Index]) + Dest.Register.Offset;
+                        Result = *DestPointer + Value;
+                        *DestPointer = static_cast<u8>(Result);
+                    }
+                    else
+                    {
+                        Registers[Dest.Register.Index] += Value;
+                        Result = Registers[Dest.Register.Index];
+                    }
+                } break;
+            }
+            SetFlags(Result);
         } break;
     }
 }
