@@ -7,7 +7,7 @@
 #pragma comment (lib, "sim86_shared_debug.lib")
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
-constexpr int RegisterNumber = 15;
+static constexpr int RegisterNumber = 15;
 
 s16 Registers[RegisterNumber] = {};
 
