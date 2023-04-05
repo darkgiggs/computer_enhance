@@ -63,7 +63,7 @@ static void PrintFlags(bool* Flags)
     std::cout << OutputBuffer << '\n';
 }
 
-static u16 GetSourceValue(const instruction_operand& Source, s16* Registers)
+static u16 GetSourceValue(const instruction_operand& Source, const s16* Registers)
 {
     u16 Value = 0xFFFF;
 
