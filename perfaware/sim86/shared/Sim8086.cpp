@@ -86,7 +86,7 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
         {
             const instruction_operand& Dest = Instruction.Operands[0];
             const instruction_operand& Source = Instruction.Operands[1];
-            u16 Value; 
+            u16 Value = 0; 
             switch (Source.Type)
             {
                 case Operand_Register:
