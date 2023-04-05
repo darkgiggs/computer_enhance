@@ -121,7 +121,7 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
         } break;
         case Op_add:
         case Op_sub:
-        case Op_cmp:
+        case Op_cmp: [[fallthrough]];
         {
             const instruction_operand& Dest = Instruction.Operands[0];
             const instruction_operand& Source = Instruction.Operands[1];
