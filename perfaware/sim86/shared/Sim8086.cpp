@@ -46,7 +46,7 @@ enum Flags
 
 static void SetFlags(u16 Result, bool* Flags)
 {
-    if (Result && 0x8000)
+    if (Result & 0x8000)
     {
         Flags[Flag_SF] = true;
     }
