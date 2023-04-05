@@ -46,22 +46,8 @@ enum Flags
 
 static void SetFlags(u16 Result, bool* Flags)
 {
-    if (Result & 0x8000)
-    {
-        Flags[Flag_SF] = true;
-    }
-    else
-    {
-        Flags[Flag_SF] = false;
-    }
-    if (Result == 0)
-    {
-        Flags[Flag_ZF] = true;
-    }
-    else
-    {
-        Flags[Flag_ZF] = false;
-    }
+    Flags[Flag_SF] = Result & 0x8000;
+    Flags[Flag_ZF] = (Result == 0);
 }
 
 static void PrintFlags(bool* Flags)
