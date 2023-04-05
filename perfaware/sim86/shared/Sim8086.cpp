@@ -49,47 +49,47 @@ void SimulateInstruction(instruction Instruction)
             */
             switch (Source.Type)
             {
-            case Operand_Register:
-            {
-                Value = Registers[Source.Register.Index];
-                if (Source.Register.Offset == 1) // Accessing high 8 bits
+                case Operand_Register:
                 {
-                    Value = (Value >> 8) & 0xFF;
-                }
-                else if (Source.Register.Count == 1) // Accessing low 8 bits
+                    Value = Registers[Source.Register.Index];
+                    if (Source.Register.Offset == 1) // Accessing high 8 bits
+                    {
+                        Value = (Value >> 8) & 0xFF;
+                    }
+                    else if (Source.Register.Count == 1) // Accessing low 8 bits
+                    {
+                        Value &= 0xFF;
+                    }
+                } break;
+                case Operand_Immediate:
                 {
-                    Value &= 0xFF;
-                }
-            } break;
-            case Operand_Immediate:
-            {
-                Value = Source.Immediate.Value;
-            } break;
+                    Value = Source.Immediate.Value;
+                } break;
             }
 
             switch (Dest.Type)
             {
-            case Operand_Register:
-            {
-                if (Dest.Register.Offset == 1) // Writing high 8 bits
+                case Operand_Register:
                 {
-                    s16 Temp = Registers[Dest.Register.Index];
-                    Temp &= 0xFF;
-                    Value <<= 8;
-                    Registers[Dest.Register.Index] = Temp | Value;
-                }
-                else if (Dest.Register.Count == 1) // Accessing low 8 bits
-                {
-                    Value &= 0xFF;
-                    s16 Temp = Registers[Dest.Register.Index];
-                    Temp &= 0xFF00;
-                    Registers[Dest.Register.Index] = Temp | Value;
-                }
-                else
-                {
-                    Registers[Dest.Register.Index] = Value;
-                }
-            } break;
+                    if (Dest.Register.Offset == 1) // Writing high 8 bits
+                    {
+                        s16 Temp = Registers[Dest.Register.Index];
+                        Temp &= 0xFF;
+                        Value <<= 8;
+                        Registers[Dest.Register.Index] = Temp | Value;
+                    }
+                    else if (Dest.Register.Count == 1) // Accessing low 8 bits
+                    {
+                        Value &= 0xFF;
+                        s16 Temp = Registers[Dest.Register.Index];
+                        Temp &= 0xFF00;
+                        Registers[Dest.Register.Index] = Temp | Value;
+                    }
+                    else
+                    {
+                        Registers[Dest.Register.Index] = Value;
+                    }
+                } break;
             }
         } break;
     }
