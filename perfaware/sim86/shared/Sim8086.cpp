@@ -6,7 +6,8 @@
 #include "sim86_shared.h"
 #pragma comment (lib, "sim86_shared_debug.lib")
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
-#define RegisterNumber 15
+
+constexpr int RegisterNumber = 15;
 
 s16 Registers[RegisterNumber] = {};
 
