@@ -53,7 +53,7 @@ static void SetFlags(u16 Result, bool* Flags)
 static void PrintFlags(bool* Flags)
 {
     std::string OutputBuffer = "Flags: ";
-    for (int i = 0; i < Flag_count; i++)
+    for (u8 i = 0; i < Flag_count; i++)
     {
         if (Flags[i])
         {
