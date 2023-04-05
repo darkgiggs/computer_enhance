@@ -41,7 +41,7 @@ enum Flags
     Flag_PF,
     Flag_CF,
 
-    Flag_number
+    Flag_count
 };
 
 static void SetFlags(u16 Result, bool* Flags)
@@ -53,7 +53,7 @@ static void SetFlags(u16 Result, bool* Flags)
 static void PrintFlags(bool* Flags)
 {
     std::string OutputBuffer = "Flags: ";
-    for (int i = 0; i < Flag_number; i++)
+    for (int i = 0; i < Flag_count; i++)
     {
         if (Flags[i])
         {
@@ -225,7 +225,7 @@ int main(int ArgCount, char** Args)
         for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
         {
             s16 Registers[RegisterNumber] = {};
-            bool Flags[Flag_number] = {};
+            bool Flags[Flag_count] = {};
 
             std::string OutputBuffer;
             char* FileName = Args[ArgIndex];
