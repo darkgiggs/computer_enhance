@@ -206,7 +206,7 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                 } break;
             }
             SetFlags(Result, Flags);
-#if DEBUG
+#if _DEBUG
             PrintFlags(Flags);
 #endif
         } break;
