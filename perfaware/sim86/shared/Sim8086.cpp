@@ -7,11 +7,11 @@
 #pragma comment (lib, "sim86_shared_debug.lib")
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
-constexpr int RegisterNumber = 15;
+static constexpr int RegisterNumber = 15;
 
-s16 Registers[RegisterNumber] = {};
+static s16 Registers[RegisterNumber] = {};
 
-char const* RegisterNames[][3] =
+static char const* RegisterNames[][3] =
 {
     {"", "", ""},
     {"al", "ah", "ax"},
@@ -30,7 +30,7 @@ char const* RegisterNames[][3] =
     {"flags", "flags", "flags"}
 };
 
-void SimulateInstruction(instruction Instruction)
+static void SimulateInstruction(const instruction& Instruction)
 {
     const char* Op = Sim86_MnemonicFromOperationType(Instruction.Op);
     
@@ -38,8 +38,8 @@ void SimulateInstruction(instruction Instruction)
     {
         case Op_mov:
         {
-            instruction_operand& Dest = Instruction.Operands[0];
-            instruction_operand& Source = Instruction.Operands[1];
+            const instruction_operand& Dest = Instruction.Operands[0];
+            const instruction_operand& Source = Instruction.Operands[1];
             u16 Value; 
             switch (Source.Type)
             {
