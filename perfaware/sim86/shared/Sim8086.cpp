@@ -44,18 +44,18 @@ enum Flags
     Flag_count
 };
 
-static void SetFlags(u16 Result, bool* Flags)
+static void SetFlags(u16 Result, bool* FlagArray)
 {
-    Flags[Flag_SF] = Result & 0x8000;
-    Flags[Flag_ZF] = (Result == 0);
+    FlagArray[Flag_SF] = Result & 0x8000;
+    FlagArray[Flag_ZF] = (Result == 0);
 }
 
-static void PrintFlags(bool* Flags)
+static void PrintFlags(bool* FlagArray)
 {
     std::string OutputBuffer = "Flags: ";
     for (u8 i = 0; i < Flag_count; i++)
     {
-        if (Flags[i])
+        if (FlagArray[i])
         {
             OutputBuffer += FlagNames[i];
         }
@@ -90,7 +90,7 @@ static u16 GetSourceValue(const instruction_operand& Source, const s16* Register
     return Value;
 }
 
-static void SimulateInstruction(const instruction& Instruction, s16* Registers, bool* Flags)
+static void SimulateInstruction(const instruction& Instruction, s16* Registers, bool* FlagArray)
 {
     const char* Op = Sim86_MnemonicFromOperationType(Instruction.Op);
     
@@ -193,9 +193,9 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                     assert(false);
                 } break;
             }
-            SetFlags(Result, Flags);
+            SetFlags(Result, FlagArray);
 #if _DEBUG
-            PrintFlags(Flags);
+            PrintFlags(FlagArray);
 #endif
         } break;
         default:
@@ -225,7 +225,7 @@ int main(int ArgCount, char** Args)
         for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
         {
             s16 Registers[RegisterNumber] = {};
-            bool Flags[Flag_count] = {};
+            bool FlagArray[Flag_count] = {};
 
             std::string OutputBuffer;
             char* FileName = Args[ArgIndex];
@@ -250,7 +250,7 @@ int main(int ArgCount, char** Args)
                 if (Decoded.Op)
                 {
                     Offset += Decoded.Size;
-                    SimulateInstruction(Decoded, Registers, Flags);
+                    SimulateInstruction(Decoded, Registers, FlagArray);
                 }
                 else
                 {
@@ -272,7 +272,7 @@ int main(int ArgCount, char** Args)
                 }
             }
             std::cout << OutputBuffer;
-            PrintFlags(Flags);
+            PrintFlags(FlagArray);
         }
     } 
 }
