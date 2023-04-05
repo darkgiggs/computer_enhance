@@ -27,7 +27,6 @@ static char const* RegisterNames[][3] =
     {"flags", "flags", "flags"}
 };
 
-static constexpr int FlagNumber = 9;
 static char const* FlagNames = { "ODITSZAPC" };
 enum Flags
 {
@@ -40,6 +39,8 @@ enum Flags
     Flag_AF,
     Flag_PF,
     Flag_CF,
+
+    Flag_number
 };
 
 static void SetFlags(u16 Result, bool* Flags)
@@ -65,7 +66,7 @@ static void SetFlags(u16 Result, bool* Flags)
 static void PrintFlags(bool* Flags)
 {
     std::string OutputBuffer = "Flags: ";
-    for (int i = 0; i < FlagNumber; i++)
+    for (int i = 0; i < Flag_number; i++)
     {
         if (Flags[i])
         {
@@ -220,7 +221,7 @@ int main(int ArgCount, char** Args)
         for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
         {
             s16 Registers[RegisterNumber] = {};
-            bool Flags[FlagNumber] = {};
+            bool Flags[Flag_number] = {};
 
             std::string OutputBuffer;
             char* FileName = Args[ArgIndex];
