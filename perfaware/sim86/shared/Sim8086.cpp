@@ -49,7 +49,6 @@ void SimulateInstruction(instruction Instruction)
                     if (Source.Register.Count == 1) // Accessing half registers
                     {
                         Value >>= 8 * Source.Register.Offset;
-                        Value &= 0xFF;
                     }
                 } break;
                 case Operand_Immediate:
