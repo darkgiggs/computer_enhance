@@ -3,8 +3,8 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include "sim86_shared.h"
 #include <assert.h>
+#include "sim86_shared.h"
 #pragma comment (lib, "sim86_shared_debug.lib")
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
