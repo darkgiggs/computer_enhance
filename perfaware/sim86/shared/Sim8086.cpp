@@ -47,8 +47,8 @@ enum Flags
     Flag_count
 };
 
-static void SetFlags(const instruction& Instruction, const u16& LeftOperandValue, 
-    const u16& RightOperandValue, const u16& Result, bool* FlagArray)
+static void SetFlags(const instruction& Instruction, const u16 LeftOperandValue, 
+    const u16 RightOperandValue, const u16 Result, bool* FlagArray)
 {   
     size_t HighOrderBit = (Instruction.Operands[1].Register.Count == 1) ? 0x80 : 0x8000;
     bool Parity = true;
