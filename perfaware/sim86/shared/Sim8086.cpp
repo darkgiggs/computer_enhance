@@ -75,7 +75,7 @@ static void SetFlags(const instruction& Instruction, const u16 LeftOperandValue,
             FlagArray[Flag_PF] = Parity;
         } break;
         case Op_sub: [[fallthrough]];
-        default:
+        case Op_cmp:
         {
             FlagArray[Flag_CF] = RightOperandValue > LeftOperandValue;
             FlagArray[Flag_AF] = (RightOperandValue & 0xF) > (LeftOperandValue & 0xF);
@@ -90,6 +90,10 @@ static void SetFlags(const instruction& Instruction, const u16 LeftOperandValue,
                 }
             }
             FlagArray[Flag_PF] = Parity;
+        } break;
+        default:
+        {
+            assert(false);
         } break;
     }
 }    
