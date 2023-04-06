@@ -79,7 +79,7 @@ static u16 GetSourceValue(const instruction_operand& Source, const s16* Register
         } break;
         case Operand_Immediate:
         {
-            Value = Source.Immediate.Value;
+            Value = static_cast<u16>(Source.Immediate.Value);
         } break;
         default:
         {
@@ -92,7 +92,6 @@ static u16 GetSourceValue(const instruction_operand& Source, const s16* Register
 
 static void SimulateInstruction(const instruction& Instruction, s16* Registers, bool* FlagArray)
 {
-    const char* Op = Sim86_MnemonicFromOperationType(Instruction.Op);
     
     switch (Instruction.Op)
     {
@@ -123,8 +122,8 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
             }
         } break;
         case Op_add:
-        case Op_sub:
-        case Op_cmp: [[fallthrough]];
+        case Op_sub: [[fallthrough]];
+        case Op_cmp:
         {
             const instruction_operand& Dest = Instruction.Operands[0];
             const instruction_operand& Source = Instruction.Operands[1];
@@ -239,7 +238,7 @@ int main(int ArgCount, char** Args)
             
             std::cout << "\n" << FileName << "\n";
             std::vector<u8> Bytes((std::istreambuf_iterator<char>(File)), std::istreambuf_iterator<char>());
-            u32 BytesRead = Bytes.size();
+            u32 BytesRead = static_cast<u32>(Bytes.size());
 
             u32 Offset = 0;
             while (Offset < BytesRead)
