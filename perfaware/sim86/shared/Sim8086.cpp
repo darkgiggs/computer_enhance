@@ -8,7 +8,10 @@
 #pragma comment (lib, "sim86_shared_debug.lib")
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
-static constexpr int RegisterNumber = 15;
+static constexpr int RegisterCount = 15;
+static constexpr int IPRegister = 13;
+static constexpr int CXRegister = 3;
+static constexpr u16 InvalidValue = 0xFFFF;
 static char const* RegisterNames[][3] =
 {
     {"", "", ""},
@@ -44,13 +47,57 @@ enum Flags
     Flag_count
 };
 
-static void SetFlags(u16 Result, bool* FlagArray)
-{
-    FlagArray[Flag_SF] = Result & 0x8000;
-    FlagArray[Flag_ZF] = (Result == 0);
-}
+static void SetFlags(const instruction& Instruction, const u16 LeftOperandValue, 
+    const u16 RightOperandValue, const u16 Result, bool* FlagArray)
+{   
+    u16 HighOrderBit = (Instruction.Operands[1].Register.Count == 1) ? 0x80 : 0x8000;
+    bool Parity = true;
+       
+    switch (Instruction.Op)
+    {
+        case Op_add:
+        {
+            FlagArray[Flag_CF] = ((LeftOperandValue & HighOrderBit) || (RightOperandValue & HighOrderBit))
+                && !(Result & HighOrderBit);
+            FlagArray[Flag_AF] = ((LeftOperandValue & 0x8) || (RightOperandValue & 0x8))
+                && !(Result & 0x8);
+            FlagArray[Flag_OF] = (~(LeftOperandValue ^ RightOperandValue) & (Result ^ LeftOperandValue)) & HighOrderBit;
+            FlagArray[Flag_SF] = Result & HighOrderBit;
+            FlagArray[Flag_ZF] = (Result == 0);
+            for (u16 i = 0; i < 8; i++)
+            {
+                if (Result & (1 << i))
+                {
+                    Parity = !Parity;
+                }
+            }
+            FlagArray[Flag_PF] = Parity;
+        } break;
+        case Op_sub: [[fallthrough]];
+        case Op_cmp:
+        {
+            FlagArray[Flag_CF] = RightOperandValue > LeftOperandValue;
+            FlagArray[Flag_AF] = (RightOperandValue & 0xF) > (LeftOperandValue & 0xF);
+            FlagArray[Flag_OF] = ((LeftOperandValue ^ RightOperandValue) & ~Result) & HighOrderBit;
+            FlagArray[Flag_SF] = Result & HighOrderBit;
+            FlagArray[Flag_ZF] = (Result == 0);
+            for (u16 i = 0; i < 8; i++)
+            {
+                if (Result & (1 << i))
+                {
+                    Parity = !Parity;
+                }
+            }
+            FlagArray[Flag_PF] = Parity;
+        } break;
+        default:
+        {
+            assert(false);
+        } break;
+    }
+}    
 
-static void PrintFlags(bool* FlagArray)
+static void PrintFlags(const bool* FlagArray)
 {
     std::string OutputBuffer = "Flags: ";
     for (size_t i = 0; i < Flag_count; i++)
@@ -63,23 +110,23 @@ static void PrintFlags(bool* FlagArray)
     std::cout << OutputBuffer << '\n';
 }
 
-static u16 GetSourceValue(const instruction_operand& Source, const s16* Registers)
+static u16 GetRightOperandValue(const instruction_operand& Source, const s16* Registers)
 {
-    u16 Value = 0xFFFF;
+    u16 RightOperandValue = InvalidValue;
 
     switch (Source.Type)
     {
         case Operand_Register:
         {
-            Value = Registers[Source.Register.Index];
+            RightOperandValue = Registers[Source.Register.Index];
             if (Source.Register.Count == 1) // Accessing half registers
             {
-                Value >>= 8 * Source.Register.Offset;
+                RightOperandValue >>= 8 * Source.Register.Offset;
             }
         } break;
         case Operand_Immediate:
         {
-            Value = Source.Immediate.Value;
+            RightOperandValue = static_cast<u16>(Source.Immediate.Value);
         } break;
         default:
         {
@@ -87,20 +134,18 @@ static u16 GetSourceValue(const instruction_operand& Source, const s16* Register
         } break;
     }
 
-    return Value;
+    return RightOperandValue;
 }
 
 static void SimulateInstruction(const instruction& Instruction, s16* Registers, bool* FlagArray)
 {
-    const char* Op = Sim86_MnemonicFromOperationType(Instruction.Op);
-    
     switch (Instruction.Op)
     {
         case Op_mov:
         {
             const instruction_operand& Dest = Instruction.Operands[0];
             const instruction_operand& Source = Instruction.Operands[1];
-            u16 Value = GetSourceValue(Source, Registers);
+            u16 RightOperandValue = GetRightOperandValue(Source, Registers);
            
             switch (Dest.Type)
             {
@@ -109,11 +154,11 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                     if (Dest.Register.Count == 1) // Accessing half registers
                     {
                         u8* DestPointer = reinterpret_cast<u8*>(&Registers[Dest.Register.Index]) + Dest.Register.Offset;
-                        *DestPointer = static_cast<u8>(Value);
+                        *DestPointer = static_cast<u8>(RightOperandValue);
                     }
                     else
                     {
-                        Registers[Dest.Register.Index] = Value;
+                        Registers[Dest.Register.Index] = RightOperandValue;
                     }
                 } break;
                 default:
@@ -122,14 +167,15 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                 } break;
             }
         } break;
-        case Op_add:
-        case Op_sub:
-        case Op_cmp: [[fallthrough]];
+        case Op_add: [[fallthrough]];
+        case Op_sub: [[fallthrough]];
+        case Op_cmp: 
         {
             const instruction_operand& Dest = Instruction.Operands[0];
             const instruction_operand& Source = Instruction.Operands[1];
-            u16 Value = GetSourceValue(Source, Registers);
-            u16 Result = 0xFFFF;
+            u16 RightOperandValue = GetRightOperandValue(Source, Registers);
+            u16 LeftOperandValue = InvalidValue;
+            u16 Result = InvalidValue;
 
             switch (Dest.Type)
             {
@@ -139,22 +185,23 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                     if (Dest.Register.Count == 1) // Accessing half registers
                     {
                         u8* DestPointer = reinterpret_cast<u8*>(&Registers[Dest.Register.Index]) + Dest.Register.Offset;
+                        LeftOperandValue = *DestPointer;
 
                         switch (Instruction.Op)
                         {
                             case Op_add:
                             {
-                                Result = *DestPointer + Value;
+                                Result = LeftOperandValue + RightOperandValue;
                                 *DestPointer = static_cast<u8>(Result);
                             } break;
                             case Op_sub:
                             {
-                                Result = *DestPointer - Value;
+                                Result = LeftOperandValue - RightOperandValue;
                                 *DestPointer = static_cast<u8>(Result);
                             } break;
                             case Op_cmp:
                             {
-                                Result = *DestPointer - Value;
+                                Result = LeftOperandValue - RightOperandValue;
                             } break;
                             default:
                             {
@@ -164,21 +211,22 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                     }
                     else
                     {
+                        LeftOperandValue = Registers[Dest.Register.Index];
                         switch (Instruction.Op)
                         {
                             case Op_add:
-                            {
-                                Registers[Dest.Register.Index] += Value;
-                                Result = Registers[Dest.Register.Index];
+                            {                           
+                                Result = LeftOperandValue + RightOperandValue;
+                                Registers[Dest.Register.Index] = Result;
                             } break;
                             case Op_sub:
                             {
-                                Registers[Dest.Register.Index] -= Value;
-                                Result = Registers[Dest.Register.Index];
+                                Result = LeftOperandValue - RightOperandValue;
+                                Registers[Dest.Register.Index] = Result;
                             } break;
                             case Op_cmp:
                             {
-                                Result = Registers[Dest.Register.Index] - Value;
+                                Result = LeftOperandValue - RightOperandValue;
                             } break;
                             default:
                             {
@@ -193,10 +241,46 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                     assert(false);
                 } break;
             }
-            SetFlags(Result, FlagArray);
+            SetFlags(Instruction, LeftOperandValue, RightOperandValue, Result, FlagArray);
 #if _DEBUG
             PrintFlags(FlagArray);
 #endif
+        } break;
+        case Op_jne: // JNE/JNZ
+        {
+            if (!FlagArray[Flag_ZF])
+            {
+                Registers[IPRegister] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+            }
+        } break;
+        case Op_je:
+        {
+            if (FlagArray[Flag_ZF])
+            {
+                Registers[IPRegister] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+            }
+        } break;
+        case Op_jb:
+        {
+            if (FlagArray[Flag_CF])
+            {
+                Registers[IPRegister] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+            }
+        } break;
+        case Op_jp:
+        {
+            if (FlagArray[Flag_PF])
+            {
+                Registers[IPRegister] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+            }
+        } break;
+        case Op_loopnz:
+        {
+            Registers[CXRegister] -= 1;
+            if (!FlagArray[Flag_ZF] && Registers[CXRegister])
+            {
+                Registers[IPRegister] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+            }
         } break;
         default:
         {
@@ -224,7 +308,7 @@ int main(int ArgCount, char** Args)
     { 
         for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
         {
-            s16 Registers[RegisterNumber] = {};
+            s16 Registers[RegisterCount] = {};
             bool FlagArray[Flag_count] = {};
 
             std::string OutputBuffer;
@@ -239,17 +323,17 @@ int main(int ArgCount, char** Args)
             
             std::cout << "\n" << FileName << "\n";
             std::vector<u8> Bytes((std::istreambuf_iterator<char>(File)), std::istreambuf_iterator<char>());
-            u32 BytesRead = Bytes.size();
+            const u16 BytesRead = static_cast<u16>(Bytes.size());
+            u16& InstructionPointer = reinterpret_cast<u16&>(Registers[IPRegister]);
 
-            u32 Offset = 0;
-            while (Offset < BytesRead)
+            while (InstructionPointer < BytesRead)
             {
                 instruction Decoded;
-                Sim86_Decode8086Instruction(BytesRead - Offset, &Bytes[0] + Offset, &Decoded);
+                Sim86_Decode8086Instruction(BytesRead - InstructionPointer, &Bytes[0] + InstructionPointer, &Decoded);
 
                 if (Decoded.Op)
                 {
-                    Offset += Decoded.Size;
+                    InstructionPointer += static_cast<u16>(Decoded.Size);
                     SimulateInstruction(Decoded, Registers, FlagArray);
                 }
                 else
@@ -257,10 +341,12 @@ int main(int ArgCount, char** Args)
                     std::cout << "Unrecognized instruction\n";
                     break;
                 }
-
+#if _DEBUG
+                std::cout << Registers[IPRegister] << std::endl;
+#endif
             }
 
-            for (size_t i = 1; i < RegisterNumber; i++)
+            for (size_t i = 1; i < RegisterCount; i++)
             {
                 if (Registers[i] != 0)
                 {
