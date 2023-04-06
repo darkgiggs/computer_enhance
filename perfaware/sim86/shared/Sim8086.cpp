@@ -9,6 +9,7 @@
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
 static constexpr int RegisterNumber = 15;
+static constexpr int IPRegister = 13;
 static char const* RegisterNames[][3] =
 {
     {"", "", ""},
@@ -50,7 +51,7 @@ static void SetFlags(u16 Result, bool* FlagArray)
     FlagArray[Flag_ZF] = (Result == 0);
 }
 
-static void PrintFlags(bool* FlagArray)
+static void PrintFlags(const bool* FlagArray)
 {
     std::string OutputBuffer = "Flags: ";
     for (size_t i = 0; i < Flag_count; i++)
@@ -238,17 +239,17 @@ int main(int ArgCount, char** Args)
             
             std::cout << "\n" << FileName << "\n";
             std::vector<u8> Bytes((std::istreambuf_iterator<char>(File)), std::istreambuf_iterator<char>());
-            u32 BytesRead = static_cast<u32>(Bytes.size());
+            const u16 BytesRead = static_cast<u16>(Bytes.size());
+            u16& InstructionPointer = reinterpret_cast<u16&>(Registers[IPRegister]);
 
-            u32 Offset = 0;
-            while (Offset < BytesRead)
+            while (InstructionPointer < BytesRead)
             {
                 instruction Decoded;
-                Sim86_Decode8086Instruction(BytesRead - Offset, &Bytes[0] + Offset, &Decoded);
+                Sim86_Decode8086Instruction(BytesRead - InstructionPointer, &Bytes[0] + InstructionPointer, &Decoded);
 
                 if (Decoded.Op)
                 {
-                    Offset += Decoded.Size;
+                    InstructionPointer += static_cast<u16>(Decoded.Size);
                     SimulateInstruction(Decoded, Registers, FlagArray);
                 }
                 else
