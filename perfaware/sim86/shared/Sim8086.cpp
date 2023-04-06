@@ -8,7 +8,7 @@
 #pragma comment (lib, "sim86_shared_debug.lib")
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
-static constexpr int RegisterNumber = 15;
+static constexpr int RegisterCount = 15;
 static constexpr int IPRegister = 13;
 static constexpr int CXRegister = 3;
 static char const* RegisterNames[][3] =
@@ -302,7 +302,7 @@ int main(int ArgCount, char** Args)
     { 
         for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
         {
-            s16 Registers[RegisterNumber] = {};
+            s16 Registers[RegisterCount] = {};
             bool FlagArray[Flag_count] = {};
 
             std::string OutputBuffer;
@@ -340,7 +340,7 @@ int main(int ArgCount, char** Args)
 #endif
             }
 
-            for (size_t i = 1; i < RegisterNumber; i++)
+            for (size_t i = 1; i < RegisterCount; i++)
             {
                 if (Registers[i] != 0)
                 {
