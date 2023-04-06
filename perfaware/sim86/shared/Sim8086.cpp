@@ -11,6 +11,7 @@
 static constexpr int RegisterCount = 15;
 static constexpr int IPRegister = 13;
 static constexpr int CXRegister = 3;
+static constexpr int InvalidValue = 0xFFFF;
 static char const* RegisterNames[][3] =
 {
     {"", "", ""},
@@ -106,7 +107,7 @@ static void PrintFlags(const bool* FlagArray)
 
 static u16 GetRightOperandValue(const instruction_operand& Source, const s16* Registers)
 {
-    u16 RightOperandValue = 0xFFFF;
+    u16 RightOperandValue = InvalidValue;
 
     switch (Source.Type)
     {
@@ -168,8 +169,8 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
             const instruction_operand& Dest = Instruction.Operands[0];
             const instruction_operand& Source = Instruction.Operands[1];
             u16 RightOperandValue = GetRightOperandValue(Source, Registers);
-            u16 LeftOperandValue = 0xFFFF;
-            u16 Result = 0xFFFF;
+            u16 LeftOperandValue = InvalidValue;
+            u16 Result = InvalidValue;
 
             switch (Dest.Type)
             {
