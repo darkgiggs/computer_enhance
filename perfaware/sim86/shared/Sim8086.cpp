@@ -221,7 +221,7 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                             } break;
                             case Op_cmp:
                             {
-                                Result = Registers[Dest.Register.Index] - RightOperandValue;
+                                Result = LeftOperandValue - RightOperandValue;
                             } break;
                             default:
                             {
