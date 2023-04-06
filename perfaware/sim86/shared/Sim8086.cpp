@@ -11,7 +11,7 @@
 static constexpr int RegisterCount = 15;
 static constexpr int IPRegister = 13;
 static constexpr int CXRegister = 3;
-static constexpr int InvalidValue = 0xFFFF;
+static constexpr u16 InvalidValue = 0xFFFF;
 static char const* RegisterNames[][3] =
 {
     {"", "", ""},
