@@ -198,6 +198,13 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
             PrintFlags(FlagArray);
 #endif
         } break;
+        case Op_jne: // JNE/JNZ
+        {
+            if (!FlagArray[Flag_ZF])
+            {
+                Registers[IPRegister] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+            }
+        } break;
         default:
         {
             assert(false);
@@ -257,7 +264,9 @@ int main(int ArgCount, char** Args)
                     std::cout << "Unrecognized instruction\n";
                     break;
                 }
-
+#if _DEBUG
+                std::cout << Registers[IPRegister] << std::endl;
+#endif
             }
 
             for (size_t i = 1; i < RegisterNumber; i++)
