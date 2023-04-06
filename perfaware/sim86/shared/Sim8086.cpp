@@ -55,28 +55,42 @@ static void SetFlags(const instruction& Instruction, const u16 LeftOperandValue,
        
     switch (Instruction.Op)
     {
-        case Op_add: [[fallthrough]];
+        case Op_add:
+        {
+            FlagArray[Flag_CF] = ((LeftOperandValue & HighOrderBit) || (RightOperandValue & HighOrderBit))
+                && !(Result & HighOrderBit);
+            FlagArray[Flag_AF] = ((LeftOperandValue & 0x8) || (RightOperandValue & 0x8))
+                && !(Result & 0x8);
+            FlagArray[Flag_OF] = ((LeftOperandValue & HighOrderBit) == (RightOperandValue & HighOrderBit))
+                && ((Result & HighOrderBit) != (LeftOperandValue & HighOrderBit));
+            FlagArray[Flag_SF] = Result & HighOrderBit;
+            FlagArray[Flag_ZF] = (Result == 0);
+            for (size_t i = 0; i < 8; i++)
+            {
+                if (Result & (1 << i))
+                {
+                    Parity = !Parity;
+                }
+            }
+            FlagArray[Flag_PF] = Parity;
+        } break;
         case Op_sub: 
         {
-            if (Instruction.Op == Op_add)
+            FlagArray[Flag_CF] = RightOperandValue > LeftOperandValue;
+            FlagArray[Flag_AF] = (RightOperandValue & 0xF) > (LeftOperandValue & 0xF);
+            FlagArray[Flag_OF] = ((LeftOperandValue & HighOrderBit) != (RightOperandValue & HighOrderBit)) && !(Result & HighOrderBit);
+            FlagArray[Flag_SF] = Result & HighOrderBit;
+            FlagArray[Flag_ZF] = (Result == 0);
+            for (size_t i = 0; i < 8; i++)
             {
-                FlagArray[Flag_CF] = ((LeftOperandValue & HighOrderBit) || (RightOperandValue & HighOrderBit))
-                    && !(Result & HighOrderBit);
-                FlagArray[Flag_AF] = ((LeftOperandValue & 0x8) || (RightOperandValue & 0x8))
-                    && !(Result & 0x8);
-                FlagArray[Flag_OF] = ((LeftOperandValue & HighOrderBit) == (RightOperandValue & HighOrderBit))
-                    && ((Result & HighOrderBit) != (LeftOperandValue & HighOrderBit));
+                if (Result & (1 << i))
+                {
+                    Parity = !Parity;
+                }
             }
-            else
-            {
-                FlagArray[Flag_CF] = RightOperandValue > LeftOperandValue;
-                FlagArray[Flag_AF] = (RightOperandValue & 0xF) > (LeftOperandValue & 0xF);
-                FlagArray[Flag_OF] = ((LeftOperandValue & HighOrderBit) != (RightOperandValue & HighOrderBit)) && !(Result & HighOrderBit);
-            }
-            
-        }
-        [[fallthrough]];
-        default: 
+            FlagArray[Flag_PF] = Parity;
+        } break;
+        default:
         {
             FlagArray[Flag_SF] = Result & HighOrderBit;
             FlagArray[Flag_ZF] = (Result == 0);
@@ -88,7 +102,7 @@ static void SetFlags(const instruction& Instruction, const u16 LeftOperandValue,
                 }
             }
             FlagArray[Flag_PF] = Parity;
-        }
+        } break;
     }
 }    
 
