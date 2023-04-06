@@ -65,7 +65,7 @@ static void SetFlags(const instruction& Instruction, const u16 LeftOperandValue,
                 && ((Result ^ LeftOperandValue) & HighOrderBit);
             FlagArray[Flag_SF] = Result & HighOrderBit;
             FlagArray[Flag_ZF] = (Result == 0);
-            for (size_t i = 0; i < 8; i++)
+            for (u16 i = 0; i < 8; i++)
             {
                 if (Result & (1 << i))
                 {
@@ -82,7 +82,7 @@ static void SetFlags(const instruction& Instruction, const u16 LeftOperandValue,
             FlagArray[Flag_OF] = ((LeftOperandValue ^ RightOperandValue) & HighOrderBit) && !(Result & HighOrderBit);
             FlagArray[Flag_SF] = Result & HighOrderBit;
             FlagArray[Flag_ZF] = (Result == 0);
-            for (size_t i = 0; i < 8; i++)
+            for (u16 i = 0; i < 8; i++)
             {
                 if (Result & (1 << i))
                 {
