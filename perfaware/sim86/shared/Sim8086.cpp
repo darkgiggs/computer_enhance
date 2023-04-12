@@ -140,8 +140,8 @@ static u16 GetRightOperandValue(const instruction_operand& Source, const s16* Re
             size_t EffectiveAddress = ComputeEffectiveAddress(Source, Registers);
             if (Source.Register.Count == 2) // word value
             {
-                u16* DestPointer = reinterpret_cast<u16*>(&Memory[EffectiveAddress]);
-                RightOperandValue = *DestPointer;
+                u16* SourcePointer = reinterpret_cast<u16*>(&Memory[EffectiveAddress]);
+                RightOperandValue = *SourcePointer;
             }
             else
             {
