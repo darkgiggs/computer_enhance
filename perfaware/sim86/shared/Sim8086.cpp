@@ -352,20 +352,18 @@ int main(int ArgCount, char** Args)
 
         std::cout << "\n" << FileName << "\n";
 
-        u16& InstructionPointer = reinterpret_cast<u16&>(Registers[IP_REGISTER]);
-        u8 Byte = static_cast<u8>(File.get());
-        while (!File.fail())
+        u16 BytesRead = 0;
+        for (u8 Byte = static_cast<u8>(File.get()); !File.fail(); Byte = static_cast<u8>(File.get()))
         {
-            Memory[InstructionPointer++] = Byte;
-            Byte = static_cast<u8>(File.get());
-        };
-        const u16 BytesRead = InstructionPointer;
-        InstructionPointer = 0;
+            Memory[BytesRead++] = Byte;
+        }
+
+        u16& InstructionPointer = reinterpret_cast<u16&>(Registers[IP_REGISTER]);
 
         while (InstructionPointer < BytesRead)
         {
             instruction Decoded;
-            Sim86_Decode8086Instruction(BytesRead - InstructionPointer, &Memory[0] + InstructionPointer, &Decoded);
+            Sim86_Decode8086Instruction(BytesRead - InstructionPointer, Memory + InstructionPointer, &Decoded);
 
             if (Decoded.Op)
             {
