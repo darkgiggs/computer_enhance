@@ -393,5 +393,9 @@ int main(int ArgCount, char** Args)
         }
         std::cout << OutputBuffer;
         PrintFlags(FlagArray);
+        for (u8& Byte : Memory)
+        {
+            Byte = 0;
+        }
     }
 }
