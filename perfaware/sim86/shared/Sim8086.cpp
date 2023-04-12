@@ -312,6 +312,14 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                 Registers[IP_REGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
             }
         } break;
+        case Op_loop:
+        {
+            Registers[CX_REGISTER] -= 1;
+            if (Registers[CX_REGISTER])
+            {
+                Registers[IP_REGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+            }
+        } break;
         default:
         {
             assert(false);
@@ -333,14 +341,23 @@ int main(int ArgCount, char** Args)
     instruction_table Table;
     Sim86_Get8086InstructionTable(&Table);
     printf("8086 Instruction Instruction Encoding Count: %u\n", Table.EncodingCount);
-
+    
+    bool DumpFile = false;
+    
     for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
     {
+        std::string FileName = Args[ArgIndex];
+        if (FileName == "-dump")
+        {
+            DumpFile = true;
+            continue;
+        }
+
         memset(Memory, 0, sizeof(Memory));
         s16 Registers[REGISTER_COUNT] = {};
         bool FlagArray[Flag_count] = {};
+        
         std::string OutputBuffer;
-        char* FileName = Args[ArgIndex];
         std::ifstream File;
         File.open(FileName, std::ifstream::binary | std::ifstream::in);
         if (!File.good())
@@ -392,5 +409,16 @@ int main(int ArgCount, char** Args)
         }
         std::cout << OutputBuffer;
         PrintFlags(FlagArray);
+        if (DumpFile)
+        {
+            std::string OutFileName = FileName + ".data";
+            std::ofstream OutFile;
+            OutFile.open(OutFileName, std::ofstream::binary);
+            for (size_t Counter = 0; Counter < MEGABYTE; Counter++)
+            {
+                OutFile << Memory[Counter];
+            }
+            OutFile.close();
+        }
     }
 }
