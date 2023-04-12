@@ -335,68 +335,70 @@ int main(int ArgCount, char** Args)
     Sim86_Get8086InstructionTable(&Table);
     printf("8086 Instruction Instruction Encoding Count: %u\n", Table.EncodingCount);
 
-    if (ArgCount > 1)
+    if (ArgCount <= 1)
     {
-        for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
+        std::cout << "No file to decode";
+        return 0;
+    }
+    for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
+    {
+        s16 Registers[REGISTER_COUNT] = {};
+        bool FlagArray[Flag_count] = {};
+
+        std::string OutputBuffer;
+        char* FileName = Args[ArgIndex];
+        std::ifstream File;
+        File.open(FileName, std::ifstream::binary | std::ifstream::in);
+        if (!File.good())
         {
-            s16 Registers[REGISTER_COUNT] = {};
-            bool FlagArray[Flag_count] = {};
-
-            std::string OutputBuffer;
-            char* FileName = Args[ArgIndex];
-            std::ifstream File;
-            File.open(FileName, std::ifstream::binary | std::ifstream::in);
-            if (!File.good())
-            {
-                std::cout << "Error opening file " << FileName;
-                return -1;
-            }
-
-            std::cout << "\n" << FileName << "\n";
-
-            u16& InstructionPointer = reinterpret_cast<u16&>(Registers[IP_REGISTER]);
-            u8 Byte = static_cast<u8>(File.get());
-            while (!File.fail())
-            {
-                Memory[InstructionPointer++] = Byte;
-                Byte = static_cast<u8>(File.get());
-            };
-            const u16 BytesRead = InstructionPointer;
-            InstructionPointer = 0;
-
-            while (InstructionPointer < BytesRead)
-            {
-                instruction Decoded;
-                Sim86_Decode8086Instruction(BytesRead - InstructionPointer, &Memory[0] + InstructionPointer, &Decoded);
-
-                if (Decoded.Op)
-                {
-                    InstructionPointer += static_cast<u16>(Decoded.Size);
-                    SimulateInstruction(Decoded, Registers, FlagArray);
-                }
-                else
-                {
-                    std::cout << "Unrecognized instruction\n";
-                    break;
-                }
-#if _DEBUG
-                std::cout << Registers[IP_REGISTER] << std::endl;
-#endif
-            }
-
-            for (size_t i = 1; i < REGISTER_COUNT; i++)
-            {
-                if (Registers[i] != 0)
-                {
-                    std::stringstream Stream;
-                    Stream << RegisterNames[i][2]
-                        << ": 0x" << std::hex << Registers[i]
-                        << " (" << std::to_string(Registers[i]) << ")\n";
-                    OutputBuffer += Stream.str();
-                }
-            }
-            std::cout << OutputBuffer;
-            PrintFlags(FlagArray);
+            std::cout << "Error opening file " << FileName;
+            return -1;
         }
+
+        std::cout << "\n" << FileName << "\n";
+
+        u16& InstructionPointer = reinterpret_cast<u16&>(Registers[IP_REGISTER]);
+        u8 Byte = static_cast<u8>(File.get());
+        while (!File.fail())
+        {
+            Memory[InstructionPointer++] = Byte;
+            Byte = static_cast<u8>(File.get());
+        };
+        const u16 BytesRead = InstructionPointer;
+        InstructionPointer = 0;
+
+        while (InstructionPointer < BytesRead)
+        {
+            instruction Decoded;
+            Sim86_Decode8086Instruction(BytesRead - InstructionPointer, &Memory[0] + InstructionPointer, &Decoded);
+
+            if (Decoded.Op)
+            {
+                InstructionPointer += static_cast<u16>(Decoded.Size);
+                SimulateInstruction(Decoded, Registers, FlagArray);
+            }
+            else
+            {
+                std::cout << "Unrecognized instruction\n";
+                break;
+            }
+#if _DEBUG
+            std::cout << Registers[IP_REGISTER] << std::endl;
+#endif
+        }
+
+        for (size_t i = 1; i < REGISTER_COUNT; i++)
+        {
+            if (Registers[i] != 0)
+            {
+                std::stringstream Stream;
+                Stream << RegisterNames[i][2]
+                    << ": 0x" << std::hex << Registers[i]
+                    << " (" << std::to_string(Registers[i]) << ")\n";
+                OutputBuffer += Stream.str();
+            }
+        }
+        std::cout << OutputBuffer;
+        PrintFlags(FlagArray);
     }
 }
