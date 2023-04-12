@@ -8,12 +8,13 @@
 #pragma comment (lib, "sim86_shared_debug.lib")
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
-u8* Memory;
 static constexpr size_t MEGABYTE = 1024 * 1024;
 static constexpr int REGISTERCOUNT = 15;
 static constexpr int IPREGISTER = 13;
 static constexpr int CXREGISTER = 3;
 static constexpr u16 INVALIDVALUE = 0xFFFF;
+
+u8 Memory[MEGABYTE];
 static char const* RegisterNames[][3] =
 {
     {"", "", ""},
@@ -334,71 +335,61 @@ int main(int ArgCount, char** Args)
     Sim86_Get8086InstructionTable(&Table);
     printf("8086 Instruction Instruction Encoding Count: %u\n", Table.EncodingCount);
 
-    Memory = reinterpret_cast<u8*>(malloc(MEGABYTE));
-
-    if (Memory)
+    if (ArgCount > 1)
     {
-        if (ArgCount > 1)
+        for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
         {
-            for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
+            s16 Registers[REGISTERCOUNT] = {};
+            bool FlagArray[Flag_count] = {};
+
+            std::string OutputBuffer;
+            char* FileName = Args[ArgIndex];
+            std::ifstream File;
+            File.open(FileName, std::ifstream::binary | std::ifstream::in);
+            if (!File.good())
             {
-                s16 Registers[REGISTERCOUNT] = {};
-                bool FlagArray[Flag_count] = {};
-
-                std::string OutputBuffer;
-                char* FileName = Args[ArgIndex];
-                std::ifstream File;
-                File.open(FileName, std::ifstream::binary | std::ifstream::in);
-                if (!File.good())
-                {
-                    std::cout << "Error opening file " << FileName;
-                    return -1;
-                }
-
-                std::cout << "\n" << FileName << "\n";
-                std::vector<u8> Bytes((std::istreambuf_iterator<char>(File)), std::istreambuf_iterator<char>());
-                const u16 BytesRead = static_cast<u16>(Bytes.size());
-                u16& InstructionPointer = reinterpret_cast<u16&>(Registers[IPREGISTER]);
-
-                while (InstructionPointer < BytesRead)
-                {
-                    instruction Decoded;
-                    Sim86_Decode8086Instruction(BytesRead - InstructionPointer, &Bytes[0] + InstructionPointer, &Decoded);
-
-                    if (Decoded.Op)
-                    {
-                        InstructionPointer += static_cast<u16>(Decoded.Size);
-                        SimulateInstruction(Decoded, Registers, FlagArray);
-                    }
-                    else
-                    {
-                        std::cout << "Unrecognized instruction\n";
-                        break;
-                    }
-#if _DEBUG
-                    std::cout << Registers[IPREGISTER] << std::endl;
-#endif
-                }
-
-                for (size_t i = 1; i < REGISTERCOUNT; i++)
-                {
-                    if (Registers[i] != 0)
-                    {
-                        std::stringstream Stream;
-                        Stream << RegisterNames[i][2]
-                            << ": 0x" << std::hex << Registers[i]
-                            << " (" << std::to_string(Registers[i]) << ")\n";
-                        OutputBuffer += Stream.str();
-                    }
-                }
-                std::cout << OutputBuffer;
-                PrintFlags(FlagArray);
+                std::cout << "Error opening file " << FileName;
+                return -1;
             }
+
+            std::cout << "\n" << FileName << "\n";
+            std::vector<u8> Bytes((std::istreambuf_iterator<char>(File)), std::istreambuf_iterator<char>());
+            const u16 BytesRead = static_cast<u16>(Bytes.size());
+            u16& InstructionPointer = reinterpret_cast<u16&>(Registers[IPREGISTER]);
+
+            while (InstructionPointer < BytesRead)
+            {
+                instruction Decoded;
+                Sim86_Decode8086Instruction(BytesRead - InstructionPointer, &Bytes[0] + InstructionPointer, &Decoded);
+
+                if (Decoded.Op)
+                {
+                    InstructionPointer += static_cast<u16>(Decoded.Size);
+                    SimulateInstruction(Decoded, Registers, FlagArray);
+                }
+                else
+                {
+                    std::cout << "Unrecognized instruction\n";
+                    break;
+                }
+#if _DEBUG
+                std::cout << Registers[IPREGISTER] << std::endl;
+#endif
+            }
+
+            for (size_t i = 1; i < REGISTERCOUNT; i++)
+            {
+                if (Registers[i] != 0)
+                {
+                    std::stringstream Stream;
+                    Stream << RegisterNames[i][2]
+                        << ": 0x" << std::hex << Registers[i]
+                        << " (" << std::to_string(Registers[i]) << ")\n";
+                    OutputBuffer += Stream.str();
+                }
+            }
+            std::cout << OutputBuffer;
+            PrintFlags(FlagArray);
         }
     }
-    else
-    {
-        std::cout << "Failed to allocate memory";
-    }
-    free(Memory);
 }
