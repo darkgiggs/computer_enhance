@@ -103,15 +103,12 @@ static void PrintFlags(const bool* FlagArray)
     std::cout << OutputBuffer << '\n';
 }
 
-static size_t ComputeEffectiveAddress(const instruction_operand& Operand, const s16* Registers)
+static inline size_t ComputeEffectiveAddress(const instruction_operand& Operand, const s16* Registers)
 {
     size_t Result = 0;
 
-    for (auto Term : Operand.Address.Terms)
-    {
-        Result += Registers[Term.Register.Index];
-    }
-
+    Result += Registers[Operand.Address.Terms[0].Register.Index];
+    Result += Registers[Operand.Address.Terms[1].Register.Index];
     Result += Operand.Address.Displacement;
 
     return Result;
