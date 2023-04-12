@@ -335,11 +335,6 @@ int main(int ArgCount, char** Args)
     Sim86_Get8086InstructionTable(&Table);
     printf("8086 Instruction Instruction Encoding Count: %u\n", Table.EncodingCount);
 
-    if (ArgCount <= 1)
-    {
-        std::cout << "No file to decode";
-        return 0;
-    }
     for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
     {
         s16 Registers[REGISTER_COUNT] = {};
