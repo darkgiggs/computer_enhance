@@ -117,7 +117,7 @@ static inline size_t ComputeEffectiveAddress(const instruction_operand& Operand,
 
 static u16 GetRightOperandValue(const instruction_operand& Source, const s16* Registers)
 {
-    u16 RightOperandValue = INVALIDVALUE;
+    u16 RightOperandValue = INVALID_VALUE;
 
     switch (Source.Type)
     {
@@ -205,8 +205,8 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
             const instruction_operand& Dest = Instruction.Operands[0];
             const instruction_operand& Source = Instruction.Operands[1];
             u16 RightOperandValue = GetRightOperandValue(Source, Registers);
-            u16 LeftOperandValue = INVALIDVALUE;
-            u16 Result = INVALIDVALUE;
+            u16 LeftOperandValue = INVALID_VALUE;
+            u16 Result = INVALID_VALUE;
 
             switch (Dest.Type)
             {
@@ -281,36 +281,36 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
         {
             if (!FlagArray[Flag_ZF])
             {
-                Registers[IPREGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+                Registers[IP_REGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
             }
         } break;
         case Op_je:
         {
             if (FlagArray[Flag_ZF])
             {
-                Registers[IPREGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+                Registers[IP_REGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
             }
         } break;
         case Op_jb:
         {
             if (FlagArray[Flag_CF])
             {
-                Registers[IPREGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+                Registers[IP_REGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
             }
         } break;
         case Op_jp:
         {
             if (FlagArray[Flag_PF])
             {
-                Registers[IPREGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+                Registers[IP_REGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
             }
         } break;
         case Op_loopnz:
         {
-            Registers[CXREGISTER] -= 1;
-            if (!FlagArray[Flag_ZF] && Registers[CXREGISTER])
+            Registers[CX_REGISTER] -= 1;
+            if (!FlagArray[Flag_ZF] && Registers[CX_REGISTER])
             {
-                Registers[IPREGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
+                Registers[IP_REGISTER] += static_cast<s8>(Instruction.Operands[0].Immediate.Value);
             }
         } break;
         default:
@@ -339,7 +339,7 @@ int main(int ArgCount, char** Args)
     {
         for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
         {
-            s16 Registers[REGISTERCOUNT] = {};
+            s16 Registers[REGISTER_COUNT] = {};
             bool FlagArray[Flag_count] = {};
 
             std::string OutputBuffer;
@@ -353,14 +353,21 @@ int main(int ArgCount, char** Args)
             }
 
             std::cout << "\n" << FileName << "\n";
-            std::vector<u8> Bytes((std::istreambuf_iterator<char>(File)), std::istreambuf_iterator<char>());
-            const u16 BytesRead = static_cast<u16>(Bytes.size());
-            u16& InstructionPointer = reinterpret_cast<u16&>(Registers[IPREGISTER]);
+
+            u16& InstructionPointer = reinterpret_cast<u16&>(Registers[IP_REGISTER]);
+            u8 Byte = static_cast<u8>(File.get());
+            while (!File.fail())
+            {
+                Memory[InstructionPointer++] = Byte;
+                Byte = static_cast<u8>(File.get());
+            };
+            const u16 BytesRead = InstructionPointer;
+            InstructionPointer = 0;
 
             while (InstructionPointer < BytesRead)
             {
                 instruction Decoded;
-                Sim86_Decode8086Instruction(BytesRead - InstructionPointer, &Bytes[0] + InstructionPointer, &Decoded);
+                Sim86_Decode8086Instruction(BytesRead - InstructionPointer, &Memory[0] + InstructionPointer, &Decoded);
 
                 if (Decoded.Op)
                 {
@@ -373,11 +380,11 @@ int main(int ArgCount, char** Args)
                     break;
                 }
 #if _DEBUG
-                std::cout << Registers[IPREGISTER] << std::endl;
+                std::cout << Registers[IP_REGISTER] << std::endl;
 #endif
             }
 
-            for (size_t i = 1; i < REGISTERCOUNT; i++)
+            for (size_t i = 1; i < REGISTER_COUNT; i++)
             {
                 if (Registers[i] != 0)
                 {
