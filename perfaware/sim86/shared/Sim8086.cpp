@@ -337,9 +337,9 @@ int main(int ArgCount, char** Args)
 
     for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
     {
+        memset(Memory, 0, sizeof(Memory));
         s16 Registers[REGISTER_COUNT] = {};
         bool FlagArray[Flag_count] = {};
-
         std::string OutputBuffer;
         char* FileName = Args[ArgIndex];
         std::ifstream File;
@@ -393,9 +393,5 @@ int main(int ArgCount, char** Args)
         }
         std::cout << OutputBuffer;
         PrintFlags(FlagArray);
-        for (u8& Byte : Memory)
-        {
-            Byte = 0;
-        }
     }
 }
