@@ -13,8 +13,6 @@ static constexpr int REGISTER_COUNT = 15;
 static constexpr int IP_REGISTER = 13;
 static constexpr int CX_REGISTER = 3;
 static constexpr u16 INVALID_VALUE = 0xFFFF;
-
-static u8 Memory[MEGABYTE];
 static char const* RegisterNames[][3] =
 {
     {"", "", ""},
@@ -33,7 +31,6 @@ static char const* RegisterNames[][3] =
     {"ip", "ip", "ip"},
     {"flags", "flags", "flags"}
 };
-
 static char const* FlagNames = { "ODITSZAPC" };
 enum Flags
 {
@@ -49,6 +46,8 @@ enum Flags
 
     Flag_count
 };
+
+static u8 Memory[MEGABYTE];
 
 static void SetFlags(const instruction& Instruction, const u16 LeftOperandValue, 
     const u16 RightOperandValue, const u16 Result, bool* FlagArray)
