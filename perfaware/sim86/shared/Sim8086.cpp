@@ -9,12 +9,12 @@
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
 static constexpr size_t MEGABYTE = 1024 * 1024;
-static constexpr int REGISTERCOUNT = 15;
-static constexpr int IPREGISTER = 13;
-static constexpr int CXREGISTER = 3;
-static constexpr u16 INVALIDVALUE = 0xFFFF;
+static constexpr int REGISTER_COUNT = 15;
+static constexpr int IP_REGISTER = 13;
+static constexpr int CX_REGISTER = 3;
+static constexpr u16 INVALID_VALUE = 0xFFFF;
 
-u8 Memory[MEGABYTE];
+static u8 Memory[MEGABYTE];
 static char const* RegisterNames[][3] =
 {
     {"", "", ""},
