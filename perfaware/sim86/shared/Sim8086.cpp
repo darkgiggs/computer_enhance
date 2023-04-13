@@ -347,7 +347,7 @@ int main(int ArgCount, char** Args)
     int ArgIndex = 1;
     for (; ArgIndex < ArgCount; ArgIndex++)
     {
-        if (std::string_view(Args[ArgIndex]) == std::string_view("-dump"))
+        if (Args[ArgIndex] == std::string_view("-dump"))
         {
             DumpFile = true;
         }
