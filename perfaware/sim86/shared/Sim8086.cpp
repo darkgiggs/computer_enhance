@@ -347,8 +347,7 @@ int main(int ArgCount, char** Args)
     int ArgIndex = 1;
     for (; ArgIndex < ArgCount; ArgIndex++)
     {
-        std::string ArgName = Args[ArgIndex];
-        if (ArgName == "-dump")
+        if (!strcmp(Args[ArgIndex],"-dump"))
         {
             DumpFile = true;
         }
