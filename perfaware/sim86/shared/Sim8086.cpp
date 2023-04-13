@@ -344,15 +344,22 @@ int main(int ArgCount, char** Args)
     
     bool DumpFile = false;
     
-    for (int ArgIndex = 1; ArgIndex < ArgCount; ArgIndex++)
+    int ArgIndex = 1;
+    for (; ArgIndex < ArgCount; ArgIndex++)
     {
-        std::string FileName = Args[ArgIndex];
-        if (FileName == "-dump")
+        std::string ArgName = Args[ArgIndex];
+        if (ArgName == "-dump")
         {
             DumpFile = true;
-            continue;
         }
-
+        else
+        {
+            break;
+        }
+    }
+    for (; ArgIndex < ArgCount; ArgIndex++)
+    {
+        std::string FileName = Args[ArgIndex];
         memset(Memory, 0, sizeof(Memory));
         s16 Registers[REGISTER_COUNT] = {};
         bool FlagArray[Flag_count] = {};
@@ -363,7 +370,7 @@ int main(int ArgCount, char** Args)
         if (!File.good())
         {
             std::cout << "Error opening file " << FileName;
-            return -1;
+            continue;
         }
 
         std::cout << "\n" << FileName << "\n";
