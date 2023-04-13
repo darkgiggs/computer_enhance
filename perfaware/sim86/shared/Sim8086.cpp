@@ -100,7 +100,7 @@ static void PrintFlags(const bool* FlagArray)
             OutputBuffer += FlagNames[i];
         }
     }
-    std::cout << OutputBuffer << '\n';
+    std::cout << OutputBuffer << '\n' << std::endl;
 }
 
 static inline size_t ComputeEffectiveAddress(const instruction_operand& Operand, const s16* Registers)
@@ -368,11 +368,11 @@ int main(int ArgCount, char** Args)
         File.open(FileName, std::ifstream::binary | std::ifstream::in);
         if (!File.good())
         {
-            std::cout << "Error opening file " << FileName;
+            std::cout << "Error opening file " << FileName << std::endl;
             continue;
         }
 
-        std::cout << "\n" << FileName << "\n";
+        std::cout << "\n" << FileName << "\n" << std::endl;
 
         u16 BytesRead = 0;
         for (u8 Byte = static_cast<u8>(File.get()); !File.fail(); Byte = static_cast<u8>(File.get()))
@@ -394,7 +394,7 @@ int main(int ArgCount, char** Args)
             }
             else
             {
-                std::cout << "Unrecognized instruction\n";
+                std::cout << "Unrecognized instruction\n" << std::endl;
                 break;
             }
 #if _DEBUG
@@ -413,7 +413,7 @@ int main(int ArgCount, char** Args)
                 OutputBuffer += Stream.str();
             }
         }
-        std::cout << OutputBuffer;
+        std::cout << OutputBuffer << std::endl;
         PrintFlags(FlagArray);
         if (DumpFile)
         {
