@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <string_view>
 #include <assert.h>
 #include "sim86_shared.h"
 #pragma comment (lib, "sim86_shared_debug.lib")
@@ -327,7 +328,6 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
     }
 }
 
-
 int main(int ArgCount, char** Args)
 {
     u32 Version = Sim86_GetVersion();
@@ -347,7 +347,7 @@ int main(int ArgCount, char** Args)
     int ArgIndex = 1;
     for (; ArgIndex < ArgCount; ArgIndex++)
     {
-        if (!strcmp(Args[ArgIndex],"-dump"))
+        if (std::string_view(Args[ArgIndex]) == std::string_view("-dump"))
         {
             DumpFile = true;
         }
