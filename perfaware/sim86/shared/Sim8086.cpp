@@ -49,6 +49,7 @@ enum Flags
 };
 
 static u8 Memory[MEGABYTE];
+static u64 ClockCycles = 0;
 
 static void SetFlags(const instruction& Instruction, const u16 LeftOperandValue, 
     const u16 RightOperandValue, const u16 Result, bool* FlagArray)
@@ -212,7 +213,6 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
             {
                 case Operand_Register:
                 {
-                    
                     if (Dest.Register.Count == 1) // Accessing half registers
                     {
                         u8* DestPointer = reinterpret_cast<u8*>(&Registers[Dest.Register.Index]) + Dest.Register.Offset;
@@ -265,6 +265,61 @@ static void SimulateInstruction(const instruction& Instruction, s16* Registers, 
                             } break;
                         }
                         
+                    }
+                } break;
+                case Operand_Memory:
+                {
+                    size_t EffectiveAddress = ComputeEffectiveAddress(Dest, Registers);
+                    if (Dest.Register.Count == 2) // word value
+                    {
+                        u16* DestPointer = reinterpret_cast<u16*>(&Memory[EffectiveAddress]);
+                        LeftOperandValue = *DestPointer;
+                        switch (Instruction.Op)
+                        {
+                            case Op_add:
+                            {
+                                Result = LeftOperandValue + RightOperandValue;
+                                *DestPointer = Result;
+                            } break;
+                            case Op_sub:
+                            {
+                                Result = LeftOperandValue - RightOperandValue;
+                                *DestPointer = Result;
+                            } break;
+                            case Op_cmp:
+                            {
+                                Result = LeftOperandValue - RightOperandValue;
+                            } break;
+                            default:
+                            {
+                                assert(false);
+                            } break;
+                        }
+                    }
+                    else
+                    {
+                        LeftOperandValue = Memory[EffectiveAddress];
+                        switch (Instruction.Op)
+                        {
+                            case Op_add:
+                            {
+                                Result = LeftOperandValue + RightOperandValue;
+                                Memory[EffectiveAddress] = static_cast<u8>(Result);
+                            } break;
+                            case Op_sub:
+                            {
+                                Result = LeftOperandValue - RightOperandValue;
+                                Memory[EffectiveAddress] = static_cast<u8>(Result);
+                            } break;
+                            case Op_cmp:
+                            {
+                                Result = LeftOperandValue - RightOperandValue;
+                            } break;
+                            default:
+                            {
+                                assert(false);
+                            } break;
+                        }
                     }
                 } break;
                 default:
@@ -398,7 +453,8 @@ int main(int ArgCount, char** Args)
                 break;
             }
 #if _DEBUG
-            std::cout << Registers[IP_REGISTER] << std::endl;
+            //printf("0x%02x\n", Registers[IP_REGISTER]);
+            std::cout << ClockCycles << " " << Registers[IP_REGISTER] << std::endl;
 #endif
         }
 
