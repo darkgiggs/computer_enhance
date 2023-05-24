@@ -31,7 +31,7 @@ static f64 RadiansFromDegrees(f64 Degrees)
 }
 
 // NOTE(casey): EarthRadius is generally expected to be 6372.8
-static f64 ReferenceHaversine(f64 X0, f64 Y0, f64 X1, f64 Y1, f64 EarthRadius)
+f64 ReferenceHaversine(f64 X0, f64 Y0, f64 X1, f64 Y1, f64 EarthRadius)
 {
     /* NOTE(casey): This is not meant to be a "good" way to calculate the Haversine distance.
        Instead, it attempts to follow, as closely as possible, the formula used in the real-world
