@@ -35,15 +35,14 @@ int main(int argCount, char** args)
     {
         std::cout
             << "Usage: haversine_release.exe [haversine_input.json]\n"
-            << "       haversine_release.exe [haversine_input.json] [answer.f64]\n"
-            << std::endl;
+            << "       haversine_release.exe [haversine_input.json] [answer.f64]\n";
         return 0;
     }
     
     std::ifstream json(args[1], std::ifstream::in);
     if (!json.good())
     {
-        std::cout << "Error opening json file" << std::endl;
+        std::cout << "Error opening json file";
         return 0;
     }
 
@@ -89,7 +88,7 @@ int main(int argCount, char** args)
         std::ifstream reference(args[2], std::ifstream::in | std::ifstream::binary);
         if (!reference.good())
         {
-            std::cout << "Error opening f64 file" << std::endl;
+            std::cout << "Error opening f64 file";
             return 0;
         }
         f64 referenceSum;
@@ -98,6 +97,6 @@ int main(int argCount, char** args)
         reference.close();
 
         std::cout << std::vformat("Validation:\nReference sum: {:.16f}\nDifference: {:.16f}",
-            std::make_format_args(referenceSum, referenceSum - sum)) << std::endl;
+            std::make_format_args(referenceSum, referenceSum - sum));
     }
 }
