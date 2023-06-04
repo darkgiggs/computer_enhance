@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <format>
+#include <assert.h>
 #include "types.h"
 #include "haversine_formula.h"
 
@@ -58,6 +59,7 @@ int main(int argCount, char** args)
             while ((c = json.get()) != ',' && c != '}') 
             {
                 *pvalue++ = c; 
+                assert((pvalue - value) < 29);
                 //NOTE(giggs) :
                 // I expect this is slow and doing a memcpy on the whole number would be faster?
                 // It might be more practical using std::from_chars on the memory range than using
